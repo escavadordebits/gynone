@@ -2,6 +2,18 @@ process.env.DATABASE_URL = "file:./dev.db";
 import { prisma } from '../src/lib/prisma';
 
 async function main() {
+  // User's Real Admin
+  const realAdmin = await prisma.user.upsert({
+    where: { email: 'sapemailb1@adm' },
+    update: {},
+    create: {
+      email: 'sapemailb1@adm',
+      name: 'Paulo Andre',
+      password: 'admin',
+      role: 'ADMIN',
+    },
+  });
+
   // Mock Admin
   const admin = await prisma.user.upsert({
     where: { email: 'admin@gymone.com' },
