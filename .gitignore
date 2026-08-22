@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+*.db
+*.db-journal
+test-gemini.js
+test-gemini2.js
