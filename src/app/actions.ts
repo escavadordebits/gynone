@@ -289,6 +289,9 @@ export async function loginUser(formData: FormData) {
     if (user.role === "ADMIN") {
       redirect("/admin");
     } else {
+      if (!user.studentProfile) {
+        throw new Error("Student profile not found.");
+      }
       redirect(`/dashboard/${user.studentProfile.id}`);
     }
 }

@@ -31,15 +31,15 @@ export default async function AnamnesisPage({ params }: { params: Promise<{ id: 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
           <div>
             <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Idade</label>
-            <input type="number" name="age" className="input-field" defaultValue={anam?.age} required min={10} max={100} />
+            <input type="number" name="age" className="input-field" defaultValue={anam?.age ?? ""} required min={10} max={100} />
           </div>
           <div>
             <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Peso (kg)</label>
-            <input type="number" step="0.1" name="weight" className="input-field" defaultValue={anam?.weight} required min={30} max={250} />
+            <input type="number" step="0.1" name="weight" className="input-field" defaultValue={anam?.weight ?? ""} required min={30} max={250} />
           </div>
           <div>
             <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Altura (m)</label>
-            <input type="number" step="0.01" name="height" className="input-field" defaultValue={anam?.height} required min={1.0} max={2.5} />
+            <input type="number" step="0.01" name="height" className="input-field" defaultValue={anam?.height ?? ""} required min={1.0} max={2.5} />
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export default async function AnamnesisPage({ params }: { params: Promise<{ id: 
           <div style={{ padding: "1rem", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "0.5rem", marginTop: "1rem" }}>
             <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>IMC Atual Calculado:</div>
             <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--vivid-green-cyan)" }}>
-              {anam.bmi.toFixed(2)}
+              {anam.bmi != null ? anam.bmi.toFixed(2) : "—"}
             </div>
           </div>
         )}
