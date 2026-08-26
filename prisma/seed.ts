@@ -1,4 +1,3 @@
-process.env.DATABASE_URL = "file:./dev.db";
 import { prisma } from '../src/lib/prisma';
 
 async function main() {
