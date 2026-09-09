@@ -28,7 +28,14 @@ export default async function AnamnesisPage({ params }: { params: Promise<{ id: 
       <form action={saveAnamnesis} className="glass" style={{ padding: "2rem", borderRadius: "1rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         <input type="hidden" name="studentId" value={student.id} />
         
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1.5rem" }}>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Sexo (Gênero)</label>
+            <select name="gender" className="input-field" defaultValue={anam?.gender || "Masculino"} required style={{ width: "100%" }}>
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+            </select>
+          </div>
           <div>
             <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Idade</label>
             <input type="number" name="age" className="input-field" defaultValue={anam?.age ?? ""} required min={10} max={100} />
@@ -59,6 +66,90 @@ export default async function AnamnesisPage({ params }: { params: Promise<{ id: 
               <option value="Musculação">Musculação</option>
               <option value="Lutas">Lutas (Boxe/Kickboxing)</option>
               <option value="Híbrido">Híbrido (Ambos)</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 style={{ marginTop: "1rem", marginBottom: "0.5rem", fontSize: "1.2rem" }}>Histórico e Disponibilidade</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem" }}>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Experiência com Treinamento</label>
+            <select name="trainingExperience" className="input-field" defaultValue={anam?.trainingExperience || "Iniciante"} style={{ width: "100%" }}>
+              <option value="Iniciante">Iniciante (Nunca treinou ou parou há muito tempo)</option>
+              <option value="Intermediário">Intermediário (Treina esporadicamente)</option>
+              <option value="Avançado">Avançado (Treina regularmente há mais de 1 ano)</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Disponibilidade para Treinar</label>
+            <select name="trainingAvailability" className="input-field" defaultValue={anam?.trainingAvailability || "3x semana"} style={{ width: "100%" }}>
+              <option value="1x semana">1x semana</option>
+              <option value="2x semana">2x semana</option>
+              <option value="3x semana">3x semana</option>
+              <option value="4x semana">4x semana</option>
+              <option value="5x semana">5x semana</option>
+              <option value="6x semana">6x semana</option>
+              <option value="todos dias">Todos os dias</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 style={{ marginTop: "1rem", marginBottom: "0.5rem", fontSize: "1.2rem" }}>Saúde e Restrições</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem" }}>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Tem condição de saúde, lesão ou limitação?</label>
+            <select name="hasHealthCondition" className="input-field" defaultValue={anam?.hasHealthCondition ? "true" : "false"} style={{ width: "100%" }}>
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Se sim, qual?</label>
+            <input type="text" name="healthConditionDetails" className="input-field" defaultValue={anam?.healthConditionDetails || ""} placeholder="Especifique a lesão/condição" style={{ width: "100%" }} />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem", marginTop: "0.5rem" }}>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Já teve dor no peito durante esforço?</label>
+            <select name="chestPain" className="input-field" defaultValue={anam?.chestPain ? "true" : "false"} style={{ width: "100%" }}>
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Já teve desmaio ou tontura no exercício?</label>
+            <select name="faintingOrDizziness" className="input-field" defaultValue={anam?.faintingOrDizziness ? "true" : "false"} style={{ width: "100%" }}>
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Sente falta de ar durante o esforço?</label>
+            <select name="shortnessOfBreath" className="input-field" defaultValue={anam?.shortnessOfBreath ? "true" : "false"} style={{ width: "100%" }}>
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Possui alguma condição Cardiovascular?</label>
+            <select name="cardiovascularCondition" className="input-field" defaultValue={anam?.cardiovascularCondition ? "true" : "false"} style={{ width: "100%" }}>
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Foi orientado por médico a evitar atividade?</label>
+            <select name="medicalRestriction" className="input-field" defaultValue={anam?.medicalRestriction ? "true" : "false"} style={{ width: "100%" }}>
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)" }}>Retomando exercícios após cirurgia?</label>
+            <select name="postSurgery" className="input-field" defaultValue={anam?.postSurgery ? "true" : "false"} style={{ width: "100%" }}>
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
             </select>
           </div>
         </div>

@@ -32,7 +32,7 @@ export default function ReportPage() {
   }
 
   const { student } = data;
-  const { anamnesis, workouts, user } = student;
+  const { anamnesis, workouts, user, assessments } = student;
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem", backgroundColor: "white", color: "black", minHeight: "100vh" }}>
@@ -62,6 +62,7 @@ export default function ReportPage() {
         <div className="print-grid" style={{ marginTop: "15px" }}>
           <div><strong>Nome:</strong> {user.name}</div>
           <div><strong>Email:</strong> {user.email}</div>
+          <div><strong>Sexo:</strong> {anamnesis?.gender || "Não informado"}</div>
           <div><strong>Plano/Local:</strong> {student.location || "Não especificado"}</div>
           <div><strong>Situação:</strong> Ativo</div>
         </div>
@@ -75,15 +76,50 @@ export default function ReportPage() {
               <strong>Idade:</strong> {anamnesis.age} anos<br/>
               <strong>Peso:</strong> {anamnesis.weight} kg<br/>
               <strong>Altura:</strong> {anamnesis.height} m<br/>
-            </div>
-            <div className="print-card">
               <strong>IMC Atual:</strong> {anamnesis.bmi?.toFixed(2)}<br/>
               <strong>Objetivo:</strong> {anamnesis.goal}<br/>
               <strong>Modalidade:</strong> {anamnesis.modality}
             </div>
+            <div className="print-card">
+              <strong>Experiência:</strong> {anamnesis.trainingExperience || "Não informada"}<br/>
+              <strong>Disponibilidade:</strong> {anamnesis.trainingAvailability || "Não informada"}<br/>
+              <strong>Lesão/Condição de Saúde:</strong> {anamnesis.hasHealthCondition ? `Sim (${anamnesis.healthConditionDetails || "Não especificada"})` : "Não"}<br/>
+              <strong>Condição Cardiovascular:</strong> {anamnesis.cardiovascularCondition ? "Sim" : "Não"}<br/>
+              <strong>Restrição Médica:</strong> {anamnesis.medicalRestriction ? "Sim" : "Não"}<br/>
+              <strong>Pós-Cirúrgico:</strong> {anamnesis.postSurgery ? "Sim" : "Não"}<br/>
+              <strong>Sintomas (Dor/Falta de ar/Desmaio):</strong> {anamnesis.chestPain || anamnesis.shortnessOfBreath || anamnesis.faintingOrDizziness ? "Sim (Requer Atenção)" : "Nenhum relatado"}
+            </div>
           </div>
         ) : (
           <p style={{ marginTop: "10px", fontStyle: "italic" }}>Anamnese não preenchida.</p>
+        )}
+      </div>
+
+      {/* SEÇÃO TESTES FÍSICOS (COOPER & 1RM) */}
+      <div className="print-section">
+        <h2 className="print-title" style={{ fontSize: "16pt", borderBottom: "1px solid #ddd", paddingBottom: "5px" }}>Testes de Aptidão Física (Cooper & 1RM)</h2>
+        {assessments && assessments.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "15px", marginTop: "15px" }}>
+            {assessments.map((a: any) => (
+              <div key={a.id} className="print-grid" style={{ backgroundColor: "#fafafa", border: "1px solid #eee", padding: "12px", borderRadius: "4px" }}>
+                <div className="print-card" style={{ border: "none", padding: 0 }}>
+                  <h3 style={{ fontSize: "12pt", margin: "0 0 5px 0", color: "#000" }}>Teste de Cooper (12 min) — VO₂máx</h3>
+                  <strong>Distância:</strong> {a.cooperDistance ? `${a.cooperDistance} m` : "—"}<br/>
+                  <strong>VO₂máx:</strong> {a.cooperVo2Max ? `${a.cooperVo2Max.toFixed(1)} mL/kg/min` : "—"}<br/>
+                  <strong>Classificação:</strong> <strong>{a.cooperClassification || "—"}</strong>
+                </div>
+                <div className="print-card" style={{ border: "none", padding: 0 }}>
+                  <h3 style={{ fontSize: "12pt", margin: "0 0 5px 0", color: "#000" }}>Força Máxima (1RM Estimado)</h3>
+                  <strong>Exercício:</strong> {a.oneRmExercise || "Geral"}<br/>
+                  <strong>Carga no Teste:</strong> {a.oneRmWeight} kg × {a.oneRmReps} reps<br/>
+                  <strong>1RM (Epley):</strong> <strong>{a.oneRmResultEpley ? `${a.oneRmResultEpley.toFixed(1)} kg` : "—"}</strong><br/>
+                  <strong>1RM (Brzycki):</strong> {a.oneRmResultBrzycki ? `${a.oneRmResultBrzycki.toFixed(1)} kg` : "—"}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ marginTop: "10px", fontStyle: "italic" }}>Nenhuma avaliação física registrada.</p>
         )}
       </div>
 

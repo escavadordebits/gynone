@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { UserPlus, Settings, FileText, CheckCircle, XCircle, Pencil, Trash2 } from "lucide-react";
+import { UserPlus, Settings, FileText, CheckCircle, XCircle, Pencil, Trash2, Activity } from "lucide-react";
 import { approveStudent, rejectStudent, adminDeleteStudent } from "../actions";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -121,10 +121,13 @@ export default async function AdminDashboard() {
                       <Link href={`/admin/students/${student.id}/anamnesis`} style={{ color: "var(--primary-color)", display: "flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
                         <FileText size={18} /> Anamnese
                       </Link>
+                      <Link href={`/admin/students/${student.id}/assessments`} style={{ color: "var(--vivid-green-cyan)", display: "flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
+                        <Activity size={18} /> Avaliação
+                      </Link>
                       <Link href={`/admin/students/${student.id}/workout`} style={{ color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
                         <Settings size={18} /> Treinos
                       </Link>
-                      <Link href={`/admin/students/${student.id}/report`} target="_blank" style={{ color: "var(--vivid-green-cyan)", display: "flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
+                      <Link href={`/admin/students/${student.id}/report`} target="_blank" style={{ color: "var(--text-color)", display: "flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
                         <FileText size={18} /> Relatório
                       </Link>
                       <Link href={`/admin/students/${student.id}/edit`} style={{ color: "var(--text-color)", display: "flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>

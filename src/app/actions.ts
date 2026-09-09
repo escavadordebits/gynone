@@ -31,6 +31,19 @@ Sua tarefa é gerar um "Treino Express" (15 a 30 minutos) focado primariamente n
 - IMC: ${student.anamnesis.bmi || 'Não calculado'}
 - Objetivo Principal: ${student.anamnesis.goal || 'Manutenção da saúde'}
 - Modalidade de Interesse: ${student.anamnesis.modality || 'Geral'}
+- Experiência de Treino: ${student.anamnesis.trainingExperience || 'Iniciante'}
+- Disponibilidade: ${student.anamnesis.trainingAvailability || '3x semana'}
+
+Restrições e Condições Médicas:
+- Tem condição de saúde ou lesão? ${student.anamnesis.hasHealthCondition ? `Sim (${student.anamnesis.healthConditionDetails})` : 'Não'}
+- Dor no peito durante esforço? ${student.anamnesis.chestPain ? 'Sim' : 'Não'}
+- Desmaio ou tontura no exercício? ${student.anamnesis.faintingOrDizziness ? 'Sim' : 'Não'}
+- Falta de ar durante o esforço? ${student.anamnesis.shortnessOfBreath ? 'Sim' : 'Não'}
+- Condição Cardiovascular? ${student.anamnesis.cardiovascularCondition ? 'Sim' : 'Não'}
+- Recomendação médica para evitar atividade? ${student.anamnesis.medicalRestriction ? 'Sim' : 'Não'}
+- Retomando exercícios pós-cirurgia? ${student.anamnesis.postSurgery ? 'Sim' : 'Não'}
+
+IMPORTANTE: Se o aluno tiver qualquer condição de saúde, problema cardíaco, histórico de dor no peito, falta de ar, tontura, restrição médica ou for pós-cirúrgico, você DEVE gerar um treino de baixíssimo impacto, com advertências claras de que o treino é leve e o aluno deve respeitar seus limites. Adapte os exercícios para não agravar essas condições.
 
 O treino deve ser prático, ir direto ao ponto e não requerer equipamentos complexos. Respeite o perfil do aluno (ex: se for obeso, evite alto impacto).
 Formato obrigatório da sua resposta (use markdown leve sem exagerar no tamanho):
@@ -93,17 +106,120 @@ export async function saveAnamnesis(formData: FormData) {
   const height = parseFloat(formData.get("height") as string);
   const goal = formData.get("goal") as string;
   const modality = formData.get("modality") as string;
+  const gender = formData.get("gender") as string || "Masculino";
+  
+  const trainingExperience = formData.get("trainingExperience") as string;
+  const trainingAvailability = formData.get("trainingAvailability") as string;
+  const hasHealthCondition = formData.get("hasHealthCondition") === "true";
+  const healthConditionDetails = formData.get("healthConditionDetails") as string;
+  const chestPain = formData.get("chestPain") === "true";
+  const faintingOrDizziness = formData.get("faintingOrDizziness") === "true";
+  const shortnessOfBreath = formData.get("shortnessOfBreath") === "true";
+  const cardiovascularCondition = formData.get("cardiovascularCondition") === "true";
+  const medicalRestriction = formData.get("medicalRestriction") === "true";
+  const postSurgery = formData.get("postSurgery") === "true";
   
   const bmi = height > 0 ? (weight / (height * height)) : 0;
   
+  const data = {
+    age, weight, height, bmi, goal, modality, gender,
+    trainingExperience, trainingAvailability, hasHealthCondition, healthConditionDetails,
+    chestPain, faintingOrDizziness, shortnessOfBreath, cardiovascularCondition, medicalRestriction, postSurgery
+  };
+
   await prisma.anamnesis.upsert({
     where: { studentId },
-    update: { age, weight, height, bmi, goal, modality },
-    create: { studentId, age, weight, height, bmi, goal, modality }
+    update: data,
+    create: { studentId, ...data }
   });
   
   revalidatePath(`/admin/students/${studentId}/anamnesis`);
+  revalidatePath(`/admin/students/${studentId}/assessments`);
   redirect("/admin");
+}
+
+import { calculateCooperVo2Max, classifyCooper, calculate1RM } from "@/lib/fitnessCalculations";
+
+export async function savePhysicalAssessment(formData: FormData) {
+  const studentId = formData.get("studentId") as string;
+  const cooperDistanceStr = formData.get("cooperDistance") as string;
+  const oneRmExercise = formData.get("oneRmExercise") as string;
+  const oneRmWeightStr = formData.get("oneRmWeight") as string;
+  const oneRmRepsStr = formData.get("oneRmReps") as string;
+  const isVisibleToStudent = formData.get("isVisibleToStudent") === "true" || formData.get("isVisibleToStudent") === "on";
+  const notes = formData.get("notes") as string;
+
+  const cooperDistance = cooperDistanceStr ? parseFloat(cooperDistanceStr) : null;
+  const oneRmWeight = oneRmWeightStr ? parseFloat(oneRmWeightStr) : null;
+  const oneRmReps = oneRmRepsStr ? parseInt(oneRmRepsStr) : null;
+
+  // Busca dados de idade e sexo do aluno na anamnese
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    include: { anamnesis: true }
+  });
+
+  const age = student?.anamnesis?.age ?? 25;
+  const gender = student?.anamnesis?.gender ?? "Masculino";
+
+  let cooperVo2Max: number | null = null;
+  let cooperClassification: string | null = null;
+
+  if (cooperDistance && cooperDistance > 0) {
+    cooperVo2Max = calculateCooperVo2Max(cooperDistance);
+    const classificationResult = classifyCooper(cooperVo2Max, age, gender);
+    cooperClassification = classificationResult.classification;
+  }
+
+  let oneRmResultEpley: number | null = null;
+  let oneRmResultBrzycki: number | null = null;
+
+  if (oneRmWeight && oneRmWeight > 0 && oneRmReps && oneRmReps > 0) {
+    const rm = calculate1RM(oneRmWeight, oneRmReps);
+    oneRmResultEpley = rm.epley;
+    oneRmResultBrzycki = rm.brzycki;
+  }
+
+  await prisma.physicalAssessment.create({
+    data: {
+      studentId,
+      cooperDistance,
+      cooperVo2Max,
+      cooperClassification,
+      oneRmExercise: oneRmExercise || "Geral",
+      oneRmWeight,
+      oneRmReps,
+      oneRmResultEpley,
+      oneRmResultBrzycki,
+      isVisibleToStudent,
+      notes,
+    }
+  });
+
+  revalidatePath(`/admin/students/${studentId}/assessments`);
+  revalidatePath(`/admin/students/${studentId}/report`);
+  revalidatePath(`/dashboard/${studentId}`);
+}
+
+export async function toggleAssessmentVisibility(assessmentId: string, studentId: string, isVisible: boolean) {
+  await prisma.physicalAssessment.update({
+    where: { id: assessmentId },
+    data: { isVisibleToStudent: isVisible }
+  });
+
+  revalidatePath(`/admin/students/${studentId}/assessments`);
+  revalidatePath(`/admin/students/${studentId}/report`);
+  revalidatePath(`/dashboard/${studentId}`);
+}
+
+export async function deletePhysicalAssessment(assessmentId: string, studentId: string) {
+  await prisma.physicalAssessment.delete({
+    where: { id: assessmentId }
+  });
+
+  revalidatePath(`/admin/students/${studentId}/assessments`);
+  revalidatePath(`/admin/students/${studentId}/report`);
+  revalidatePath(`/dashboard/${studentId}`);
 }
 
 export async function requestAccess(formData: FormData) {
@@ -167,7 +283,10 @@ export async function getStudentReportData(studentId: string) {
     include: {
       user: true,
       anamnesis: true,
-      workouts: true
+      workouts: true,
+      assessments: {
+        orderBy: { createdAt: "desc" }
+      }
     }
   });
 

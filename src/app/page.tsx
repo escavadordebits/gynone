@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Link from "next/link";
 import { ArrowRight, UserPlus, Play, Dumbbell } from "lucide-react";
+import VideoPlayerCard from "@/components/VideoPlayerCard";
 
 export default function Home() {
   return (
@@ -30,32 +31,14 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ flex: "1 1 400px", display: "flex", justifyContent: "center", position: "relative" }}>
-          {/* Placeholder for the Trainer Image, styled as a glowing card */}
-          <div style={{ 
-            width: "100%", 
-            maxWidth: "500px", 
-            aspectRatio: "1/1", 
-            background: "linear-gradient(135deg, rgba(232,25,24,0.2) 0%, rgba(26,28,35,0.8) 100%)",
-            borderRadius: "2rem",
-            border: "1px solid rgba(232, 25, 24, 0.3)",
-            boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden"
-          }}>
-            <Dumbbell size={100} color="var(--primary-color)" style={{ opacity: 0.5 }} />
-            <div style={{ position: "absolute", bottom: "2rem", right: "2rem", background: "var(--bg-color)", padding: "1rem", borderRadius: "1rem", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div style={{ width: "3rem", height: "3rem", borderRadius: "50%", backgroundColor: "var(--primary-color)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Play color="white" fill="white" size={20} style={{ marginLeft: "4px" }} />
-              </div>
-              <div>
-                <div style={{ fontWeight: 800 }}>Resultados Reais</div>
-                <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Assista ao vídeo</div>
-              </div>
-            </div>
-          </div>
+        <div style={{ flex: "1 1 380px", display: "flex", justifyContent: "center", position: "relative" }}>
+          <VideoPlayerCard
+            src="/landing-video.mp4"
+            badge="#TEAMJUNIORGLORIA"
+            title="Resultados Reais"
+            subtitle="Conheça o método e evolução"
+            maxWidth="360px"
+          />
         </div>
       </section>
 

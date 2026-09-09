@@ -35,6 +35,7 @@ model Student {
 
   anamnesis       Anamnesis?
   workouts        Workout[]
+  assessments     PhysicalAssessment[]
 }
 
 model Anamnesis {
@@ -52,8 +53,46 @@ model Anamnesis {
   modality         String?
   availableTime    String?
   postCycleResult  String?
+  
+  gender           String?  // Masculino ou Feminino
+  trainingExperience   String?
+  trainingAvailability String?
+  hasHealthCondition   Boolean? @default(false)
+  healthConditionDetails String?
+  chestPain            Boolean? @default(false)
+  faintingOrDizziness  Boolean? @default(false)
+  shortnessOfBreath    Boolean? @default(false)
+  cardiovascularCondition Boolean? @default(false)
+  medicalRestriction   Boolean? @default(false)
+  postSurgery          Boolean? @default(false)
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+model PhysicalAssessment {
+  id                    String   @id @default(cuid())
+  studentId             String
+  student               Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  // Teste de Cooper (12 minutos)
+  cooperDistance        Float?   // Metros percorridos
+  cooperVo2Max          Float?   // mL/kg/min
+  cooperClassification  String?  // Muito baixo, Baixo, Regular, Bom, Excelente
+  
+  // Estimativa de 1RM por repetições
+  oneRmExercise         String?  // Nome do exercício (Supino, Agachamento, etc)
+  oneRmWeight           Float?   // Carga levantada em kg
+  oneRmReps             Int?     // Número de repetições realizadas
+  oneRmResultEpley      Float?   // 1RM estimado (Epley)
+  oneRmResultBrzycki    Float?   // 1RM estimado (Brzycki)
+  
+  // Controle de Visibilidade para o Aluno
+  isVisibleToStudent    Boolean  @default(true)
+  notes                 String?  // Observações adicionais do treinador
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
 
 model Workout {
