@@ -77,6 +77,68 @@ export function classifyCooper(vo2Max: number, age: number, gender: "Masculino" 
   return { classification, matchedRow, matchedColIndex };
 }
 
+export type TrainingGoal = "hipertrofia" | "forca" | "resistencia" | "potencia";
+
+export interface GoalDetails {
+  id: TrainingGoal;
+  label: string;
+  minPercent: number;
+  maxPercent: number;
+  repsRange: string;
+  restRange: string;
+  description: string;
+}
+
+export const TRAINING_GOALS: Record<TrainingGoal, GoalDetails> = {
+  hipertrofia: {
+    id: "hipertrofia",
+    label: "Hipertrofia Muscular",
+    minPercent: 67,
+    maxPercent: 85,
+    repsRange: "6 a 12 repetições",
+    restRange: "60 a 90 segundos",
+    description: "Faixa ideal para ganho de massa muscular com intensidade moderada-alta e tensão mecânica prolongada.",
+  },
+  forca: {
+    id: "forca",
+    label: "Força Máxima",
+    minPercent: 85,
+    maxPercent: 100,
+    repsRange: "1 a 5 repetições",
+    restRange: "2 a 5 minutos",
+    description: "Foco em adaptações neurais e recrutamento máximo de unidades motoras.",
+  },
+  resistencia: {
+    id: "resistencia",
+    label: "Resistência Muscular",
+    minPercent: 50,
+    maxPercent: 67,
+    repsRange: "15 a 25+ repetições",
+    restRange: "30 a 60 segundos",
+    description: "Aprimoramento da capacidade oxidativa, resistência à fadiga e densidade capilar.",
+  },
+  potencia: {
+    id: "potencia",
+    label: "Potência / Explosão",
+    minPercent: 75,
+    maxPercent: 90,
+    repsRange: "3 a 5 repetições explosivas",
+    restRange: "2 a 3 minutos",
+    description: "Desenvolvimento de taxa de produção de força (RFD) com alta velocidade de execução.",
+  }
+};
+
+export function getGoalRecommendation(goal: TrainingGoal, base1RM: number) {
+  const details = TRAINING_GOALS[goal] || TRAINING_GOALS.hipertrofia;
+  const minWeight = base1RM > 0 ? parseFloat(((base1RM * details.minPercent) / 100).toFixed(1)) : 0;
+  const maxWeight = base1RM > 0 ? parseFloat(((base1RM * details.maxPercent) / 100).toFixed(1)) : 0;
+  return {
+    ...details,
+    minWeight,
+    maxWeight,
+  };
+}
+
 export function calculate1RM(weight: number, reps: number): {
   epley: number;
   brzycki: number;
@@ -101,3 +163,4 @@ export function calculate1RM(weight: number, reps: number): {
 
   return { epley, brzycki, intensityZones };
 }
+

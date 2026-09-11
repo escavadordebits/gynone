@@ -8,9 +8,13 @@ import {
   calculate1RM, 
   MEN_COOPER_TABLE, 
   WOMEN_COOPER_TABLE,
-  CooperTableEntry
+  CooperTableEntry,
+  TRAINING_GOALS,
+  TrainingGoal,
+  getGoalRecommendation
 } from "@/lib/fitnessCalculations";
-import { Activity, Dumbbell, Eye, EyeOff, Save, CheckCircle, Flame, Trophy } from "lucide-react";
+import { Activity, Dumbbell, Eye, EyeOff, Save, CheckCircle, Flame, Trophy, Target, Sparkles } from "lucide-react";
+
 
 interface AssessmentFormProps {
   studentId: string;
@@ -23,6 +27,7 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
   const [exercise, setExercise] = useState("Supino Reto");
   const [weight, setWeight] = useState<number | "">(60);
   const [reps, setReps] = useState<number | "">(10);
+  const [targetGoal, setTargetGoal] = useState<TrainingGoal>("hipertrofia");
   const [notes, setNotes] = useState("");
   const [isVisible, setIsVisible] = useState(true);
   const [activeTableGender, setActiveTableGender] = useState<"Masculino" | "Feminino">(
@@ -38,13 +43,16 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
   const numWeight = typeof weight === "number" ? weight : 0;
   const numReps = typeof reps === "number" ? reps : 0;
   const rmResult = calculate1RM(numWeight, numReps);
+  const goalRec = getGoalRecommendation(targetGoal, rmResult.epley);
 
   const currentTable: CooperTableEntry[] = activeTableGender === "Feminino" ? WOMEN_COOPER_TABLE : MEN_COOPER_TABLE;
+
 
   return (
     <form action={savePhysicalAssessment} className="glass" style={{ padding: "2rem", borderRadius: "1rem", marginBottom: "3rem" }}>
       <input type="hidden" name="studentId" value={studentId} />
       <input type="hidden" name="isVisibleToStudent" value={isVisible ? "true" : "false"} />
+      <input type="hidden" name="targetGoal" value={targetGoal} />
 
       {/* SEÇÃO 1: TESTE DE COOPER */}
       <div style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "2rem", marginBottom: "2rem" }}>
@@ -285,21 +293,132 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
           </div>
         </div>
 
+        {/* SELETOR DE OBJETIVO DO TESTE / PRESCRIÇÃO */}
+        <div style={{ backgroundColor: "rgba(0,0,0,0.2)", padding: "1.25rem", borderRadius: "0.75rem", border: "1px solid var(--border-color)", marginBottom: "1.5rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 700, fontSize: "0.95rem" }}>
+              <Target size={18} color="var(--primary-color)" /> Objetivo do Treinamento:
+            </div>
+            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+              Selecione o objetivo para calcular a faixa ideal de trabalho
+            </span>
+          </div>
+
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+            {(Object.keys(TRAINING_GOALS) as TrainingGoal[]).map((goalKey) => {
+              const g = TRAINING_GOALS[goalKey];
+              const isSelected = targetGoal === goalKey;
+              return (
+                <button
+                  key={goalKey}
+                  type="button"
+                  onClick={() => setTargetGoal(goalKey)}
+                  style={{
+                    padding: "0.45rem 0.9rem",
+                    borderRadius: "0.5rem",
+                    fontSize: "0.85rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: isSelected ? "1px solid var(--primary-color)" : "1px solid var(--border-color)",
+                    backgroundColor: isSelected ? "rgba(232, 25, 24, 0.2)" : "rgba(255,255,255,0.03)",
+                    color: isSelected ? "white" : "var(--text-muted)",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {g.label} ({g.minPercent}-{g.maxPercent}%)
+                </button>
+              );
+            })}
+          </div>
+
+          {rmResult.epley > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", backgroundColor: "rgba(232, 25, 24, 0.08)", border: "1px solid rgba(232, 25, 24, 0.25)", padding: "1rem", borderRadius: "0.5rem" }}>
+              <div>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px", display: "block" }}>
+                  Cargas Recomendadas ({goalRec.label})
+                </span>
+                <span style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--primary-color)" }}>
+                  {goalRec.minWeight} kg a {goalRec.maxWeight} kg
+                </span>
+                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginTop: "2px" }}>
+                  {goalRec.minPercent}% a {goalRec.maxPercent}% de 1RM
+                </span>
+              </div>
+              <div>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px", display: "block" }}>
+                  Repetições & Descanso
+                </span>
+                <span style={{ fontSize: "1rem", fontWeight: 700, color: "white" }}>
+                  {goalRec.repsRange}
+                </span>
+                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginTop: "2px" }}>
+                  Descanso: {goalRec.restRange}
+                </span>
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const snippet = `[Prescrição ${goalRec.label}]: ${goalRec.minWeight}kg a ${goalRec.maxWeight}kg (${goalRec.repsRange}, descanso ${goalRec.restRange})`;
+                    setNotes(prev => prev ? `${prev}\n${snippet}` : snippet);
+                  }}
+                  style={{
+                    padding: "0.4rem 0.8rem",
+                    borderRadius: "0.4rem",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    color: "white",
+                    border: "1px solid var(--border-color)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.3rem"
+                  }}
+                >
+                  <Sparkles size={14} color="var(--primary-color)" /> Copiar para Observações
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* TABELA DE INTENSIDADES POR PERCENTUAL DE 1RM */}
         {rmResult.intensityZones.length > 0 && (
           <div>
-            <div style={{ fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-              Tabela de Prescrição por % de 1RM ({exercise}):
+            <div style={{ fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>Tabela de Prescrição por % de 1RM ({exercise}):</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--vivid-green-cyan)", fontWeight: 600 }}>
+                ★ Realce: Faixa do objetivo ({goalRec.label})
+              </span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(90px, 1fr))", gap: "0.5rem" }}>
-              {rmResult.intensityZones.map((zone) => (
-                <div key={zone.percent} style={{ backgroundColor: "rgba(255,255,255,0.03)", padding: "0.6rem", borderRadius: "0.5rem", textAlign: "center", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{zone.percent}%</div>
-                  <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--vivid-green-cyan)", marginTop: "2px" }}>
-                    {zone.weight} kg
+              {rmResult.intensityZones.map((zone) => {
+                const isTargetZone = zone.percent >= goalRec.minPercent && zone.percent <= goalRec.maxPercent;
+                return (
+                  <div 
+                    key={zone.percent} 
+                    style={{ 
+                      backgroundColor: isTargetZone ? "rgba(0, 208, 132, 0.15)" : "rgba(255,255,255,0.03)", 
+                      padding: "0.6rem", 
+                      borderRadius: "0.5rem", 
+                      textAlign: "center", 
+                      border: isTargetZone ? "1px solid var(--vivid-green-cyan)" : "1px solid rgba(255,255,255,0.05)",
+                      position: "relative"
+                    }}
+                  >
+                    {isTargetZone && (
+                      <span style={{ position: "absolute", top: "-6px", right: "-4px", fontSize: "0.6rem", backgroundColor: "var(--vivid-green-cyan)", color: "black", fontWeight: 800, padding: "1px 4px", borderRadius: "4px" }}>
+                        ALVO
+                      </span>
+                    )}
+                    <div style={{ fontSize: "0.75rem", color: isTargetZone ? "white" : "var(--text-muted)", fontWeight: isTargetZone ? 700 : 400 }}>{zone.percent}%</div>
+                    <div style={{ fontSize: "1rem", fontWeight: 700, color: isTargetZone ? "var(--vivid-green-cyan)" : "white", marginTop: "2px" }}>
+                      {zone.weight} kg
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

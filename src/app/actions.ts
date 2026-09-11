@@ -192,8 +192,19 @@ export async function savePhysicalAssessment(formData: FormData) {
       oneRmResultEpley,
       oneRmResultBrzycki,
       isVisibleToStudent,
-      notes,
+      notes: (() => {
+        const targetGoal = formData.get("targetGoal") as string;
+        let finalNotes = notes || "";
+        if (targetGoal) {
+          const goalLabel = targetGoal === "forca" ? "Força Máxima" : targetGoal === "resistencia" ? "Resistência Muscular" : targetGoal === "potencia" ? "Potência" : "Hipertrofia";
+          if (!finalNotes.includes(goalLabel)) {
+            finalNotes = `[Objetivo: ${goalLabel}] ${finalNotes}`.trim();
+          }
+        }
+        return finalNotes || null;
+      })(),
     }
+
   });
 
   revalidatePath(`/admin/students/${studentId}/assessments`);

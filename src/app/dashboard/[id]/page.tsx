@@ -107,8 +107,15 @@ export default async function StudentDashboardPage({ params }: { params: Promise
                   <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)" }}>
                     Carga teste: <strong style={{ color: "white" }}>{student.assessments[0].oneRmWeight} kg × {student.assessments[0].oneRmReps} reps</strong>
                   </p>
+
+                  {student.assessments[0].notes && (
+                    <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.08)", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                      <strong style={{ color: "white" }}>Prescrição:</strong> {student.assessments[0].notes}
+                    </div>
+                  )}
                 </div>
               )}
+
             </div>
           </div>
         )}

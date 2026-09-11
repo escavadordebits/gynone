@@ -100,23 +100,39 @@ export default function ReportPage() {
         <h2 className="print-title" style={{ fontSize: "16pt", borderBottom: "1px solid #ddd", paddingBottom: "5px" }}>Testes de Aptidão Física (Cooper & 1RM)</h2>
         {assessments && assessments.length > 0 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px", marginTop: "15px" }}>
-            {assessments.map((a: any) => (
-              <div key={a.id} className="print-grid" style={{ backgroundColor: "#fafafa", border: "1px solid #eee", padding: "12px", borderRadius: "4px" }}>
-                <div className="print-card" style={{ border: "none", padding: 0 }}>
-                  <h3 style={{ fontSize: "12pt", margin: "0 0 5px 0", color: "#000" }}>Teste de Cooper (12 min) — VO₂máx</h3>
-                  <strong>Distância:</strong> {a.cooperDistance ? `${a.cooperDistance} m` : "—"}<br/>
-                  <strong>VO₂máx:</strong> {a.cooperVo2Max ? `${a.cooperVo2Max.toFixed(1)} mL/kg/min` : "—"}<br/>
-                  <strong>Classificação:</strong> <strong>{a.cooperClassification || "—"}</strong>
+            {assessments.map((a: any, idx: number) => {
+              const assessmentNumber = assessments.length - idx;
+              const label = assessmentNumber === 1 ? "Avaliação Inicial" : `Reavaliação #${assessmentNumber - 1}`;
+              return (
+              <div key={a.id} style={{ backgroundColor: "#fafafa", border: "1px solid #eee", padding: "12px", borderRadius: "4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", borderBottom: "1px solid #eee", paddingBottom: "4px", fontSize: "9pt", color: "#666" }}>
+                  <strong>{label}</strong>
+                  <span>Data: {new Date(a.createdAt).toLocaleDateString("pt-BR")}</span>
                 </div>
-                <div className="print-card" style={{ border: "none", padding: 0 }}>
-                  <h3 style={{ fontSize: "12pt", margin: "0 0 5px 0", color: "#000" }}>Força Máxima (1RM Estimado)</h3>
-                  <strong>Exercício:</strong> {a.oneRmExercise || "Geral"}<br/>
-                  <strong>Carga no Teste:</strong> {a.oneRmWeight} kg × {a.oneRmReps} reps<br/>
-                  <strong>1RM (Epley):</strong> <strong>{a.oneRmResultEpley ? `${a.oneRmResultEpley.toFixed(1)} kg` : "—"}</strong><br/>
-                  <strong>1RM (Brzycki):</strong> {a.oneRmResultBrzycki ? `${a.oneRmResultBrzycki.toFixed(1)} kg` : "—"}
+                <div className="print-grid">
+                  <div className="print-card" style={{ border: "none", padding: 0 }}>
+                    <h3 style={{ fontSize: "11pt", margin: "0 0 5px 0", color: "#000" }}>Teste de Cooper (12 min) — VO₂máx</h3>
+                    <strong>Distância:</strong> {a.cooperDistance ? `${a.cooperDistance} m` : "—"}<br/>
+                    <strong>VO₂máx:</strong> {a.cooperVo2Max ? `${a.cooperVo2Max.toFixed(1)} mL/kg/min` : "—"}<br/>
+                    <strong>Classificação:</strong> <strong>{a.cooperClassification || "—"}</strong>
+                  </div>
+                  <div className="print-card" style={{ border: "none", padding: 0 }}>
+                    <h3 style={{ fontSize: "11pt", margin: "0 0 5px 0", color: "#000" }}>Força Máxima (1RM Estimado)</h3>
+                    <strong>Exercício:</strong> {a.oneRmExercise || "Geral"}<br/>
+                    <strong>Carga no Teste:</strong> {a.oneRmWeight} kg × {a.oneRmReps} reps<br/>
+                    <strong>1RM (Epley):</strong> <strong>{a.oneRmResultEpley ? `${a.oneRmResultEpley.toFixed(1)} kg` : "—"}</strong><br/>
+                    <strong>1RM (Brzycki):</strong> {a.oneRmResultBrzycki ? `${a.oneRmResultBrzycki.toFixed(1)} kg` : "—"}
+                  </div>
                 </div>
+                {a.notes && (
+                  <div style={{ marginTop: "8px", fontSize: "9pt", color: "#444", borderTop: "1px dashed #eee", paddingTop: "5px" }}>
+                    <strong>Prescrição / Observações:</strong> {a.notes}
+                  </div>
+                )}
               </div>
-            ))}
+              );
+            })}
+
           </div>
         ) : (
           <p style={{ marginTop: "10px", fontStyle: "italic" }}>Nenhuma avaliação física registrada.</p>

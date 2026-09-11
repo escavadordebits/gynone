@@ -45,3 +45,4 @@ next-env.d.ts
 *.db-journal
 test-gemini.js
 test-gemini2.js
+*.opus

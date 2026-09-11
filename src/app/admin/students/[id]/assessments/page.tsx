@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { MoveLeft, Activity, Dumbbell, Calendar, Trash2, Eye, EyeOff } from "lucide-react";
+import { MoveLeft, Activity, Dumbbell, Calendar, Trash2, Eye, EyeOff, FileText, PlusCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AssessmentForm from "@/components/AssessmentForm";
@@ -24,6 +24,15 @@ export default async function AssessmentsPage({ params }: { params: Promise<{ id
   const studentAge = student.anamnesis?.age || 25;
   const studentGender = student.anamnesis?.gender || "Masculino";
 
+  const latestAssessment = student.assessments[0];
+  const previousAssessment = student.assessments[1];
+  let strengthEvolution: { diff: number; pct: number } | null = null;
+  if (latestAssessment?.oneRmResultEpley && previousAssessment?.oneRmResultEpley) {
+    const diff = parseFloat((latestAssessment.oneRmResultEpley - previousAssessment.oneRmResultEpley).toFixed(1));
+    const pct = parseFloat(((diff / previousAssessment.oneRmResultEpley) * 100).toFixed(1));
+    strengthEvolution = { diff, pct };
+  }
+
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1.5rem" }}>
       <Link 
@@ -33,9 +42,9 @@ export default async function AssessmentsPage({ params }: { params: Promise<{ id
         <MoveLeft size={18} /> Voltar ao Painel
       </Link>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "2rem", flexWrap: "wrap", gap: "1.5rem" }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: "2rem" }}>Avaliação Física & Cálculos</h2>
+          <h2 style={{ margin: 0, fontSize: "2rem" }}>Avaliação Física & Calculadora 1RM</h2>
           <p style={{ color: "var(--text-muted)", margin: "0.5rem 0 0 0" }}>
             Aluno: <strong style={{ color: "var(--primary-color)" }}>{student.user.name}</strong> • 
             Idade: <strong>{studentAge} anos</strong> • 
@@ -43,21 +52,78 @@ export default async function AssessmentsPage({ params }: { params: Promise<{ id
           </p>
         </div>
 
-        <Link
-          href={`/admin/students/${student.id}/anamnesis`}
-          className="btn btn-secondary"
-          style={{ fontSize: "0.85rem", padding: "0.5rem 1rem" }}
-        >
-          Editar Anamnese
-        </Link>
+        {/* BOTÕES DE HISTÓRICO & REAVALIAÇÃO */}
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
+          <Link
+            href={`/admin/students/${student.id}/report`}
+            className="btn btn-primary"
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", padding: "0.6rem 1.2rem" }}
+            title="Visualizar e exportar histórico em PDF"
+          >
+            <FileText size={18} /> Histórico em PDF
+          </Link>
+
+          <a
+            href="#calculadora-avaliacao"
+            className="btn"
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "0.5rem", 
+              fontSize: "0.9rem", 
+              padding: "0.6rem 1.2rem", 
+              backgroundColor: "rgba(255,255,255,0.08)", 
+              color: "white", 
+              border: "1px solid var(--border-color)",
+              textDecoration: "none",
+              borderRadius: "0.5rem",
+              fontWeight: 600
+            }}
+          >
+            <PlusCircle size={18} color="var(--primary-color)" /> Nova Reavaliação
+          </a>
+
+          <Link
+            href={`/admin/students/${student.id}/anamnesis`}
+            className="btn btn-secondary"
+            style={{ fontSize: "0.85rem", padding: "0.6rem 1rem" }}
+          >
+            Editar Anamnese
+          </Link>
+        </div>
       </div>
 
-      {/* FORMULÁRIO INTERATIVO */}
-      <AssessmentForm 
-        studentId={student.id} 
-        studentAge={studentAge} 
-        studentGender={studentGender} 
-      />
+      {/* BANNER DE EVOLUÇÃO DE FORÇA (SE HOUVER HISTÓRICO DE REAVALIAÇÃO) */}
+      {strengthEvolution && (
+        <div className="glass" style={{ padding: "1.25rem 1.5rem", borderRadius: "0.75rem", border: "1px solid rgba(0, 208, 132, 0.3)", backgroundColor: "rgba(0, 208, 132, 0.08)", marginBottom: "2rem", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "rgba(0, 208, 132, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <TrendingUp size={22} color="var(--vivid-green-cyan)" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "white" }}>
+                Evolução de 1RM: {strengthEvolution.diff >= 0 ? `+${strengthEvolution.diff} kg (+${strengthEvolution.pct}%)` : `${strengthEvolution.diff} kg (${strengthEvolution.pct}%)`}
+              </div>
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                Comparativo entre a última reavaliação ({new Date(latestAssessment.createdAt).toLocaleDateString("pt-BR")}) e a avaliação anterior ({new Date(previousAssessment.createdAt).toLocaleDateString("pt-BR")}).
+              </div>
+            </div>
+          </div>
+          <span style={{ padding: "0.3rem 0.8rem", borderRadius: "1rem", backgroundColor: "rgba(0, 208, 132, 0.2)", color: "var(--vivid-green-cyan)", fontWeight: 800, fontSize: "0.85rem" }}>
+            {student.assessments.length} avaliações no histórico
+          </span>
+        </div>
+      )}
+
+      {/* FORMULÁRIO INTERATIVO / REAVALIAÇÃO */}
+      <div id="calculadora-avaliacao">
+        <AssessmentForm 
+          studentId={student.id} 
+          studentAge={studentAge} 
+          studentGender={studentGender} 
+        />
+      </div>
+
 
       {/* HISTÓRICO DE AVALIAÇÕES */}
       <div>
@@ -69,7 +135,12 @@ export default async function AssessmentsPage({ params }: { params: Promise<{ id
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            {student.assessments.map((a) => (
+            {student.assessments.map((a, idx) => {
+              const isLatest = idx === 0;
+              const assessmentNumber = student.assessments.length - idx;
+              const label = assessmentNumber === 1 ? "Avaliação Inicial" : `Reavaliação #${assessmentNumber - 1}`;
+
+              return (
               <div 
                 key={a.id} 
                 className="glass" 
@@ -80,10 +151,24 @@ export default async function AssessmentsPage({ params }: { params: Promise<{ id
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                    <Calendar size={16} />
-                    <span>Realizado em: {new Date(a.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                    <span style={{ 
+                      padding: "0.2rem 0.65rem", 
+                      borderRadius: "1rem", 
+                      fontSize: "0.75rem", 
+                      fontWeight: 800, 
+                      backgroundColor: isLatest ? "rgba(232, 25, 24, 0.2)" : "rgba(255,255,255,0.06)", 
+                      color: isLatest ? "var(--primary-color)" : "var(--text-muted)",
+                      border: isLatest ? "1px solid rgba(232, 25, 24, 0.4)" : "1px solid var(--border-color)"
+                    }}>
+                      {label} {isLatest && "• Atual"}
+                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                      <Calendar size={15} />
+                      <span>{new Date(a.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                    </div>
                   </div>
+
 
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                     {/* BOTÃO ALTERNAR VISIBILIDADE */}
@@ -183,8 +268,10 @@ export default async function AssessmentsPage({ params }: { params: Promise<{ id
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
+
         )}
       </div>
     </div>
