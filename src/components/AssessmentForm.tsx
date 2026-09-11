@@ -33,6 +33,7 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
   const [activeTableGender, setActiveTableGender] = useState<"Masculino" | "Feminino">(
     studentGender.toLowerCase().startsWith("f") ? "Feminino" : "Masculino"
   );
+  const [showCooperTable, setShowCooperTable] = useState(false);
 
   // Cálculos em tempo real de Cooper
   const numDistance = typeof distance === "number" ? distance : 0;
@@ -47,12 +48,12 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
 
   const currentTable: CooperTableEntry[] = activeTableGender === "Feminino" ? WOMEN_COOPER_TABLE : MEN_COOPER_TABLE;
 
-
   return (
     <form action={savePhysicalAssessment} className="glass" style={{ padding: "2rem", borderRadius: "1rem", marginBottom: "3rem" }}>
       <input type="hidden" name="studentId" value={studentId} />
       <input type="hidden" name="isVisibleToStudent" value={isVisible ? "true" : "false"} />
       <input type="hidden" name="targetGoal" value={targetGoal} />
+      <input type="hidden" name="cooperGender" value={activeTableGender} />
 
       {/* SEÇÃO 1: TESTE DE COOPER */}
       <div style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "2rem", marginBottom: "2rem" }}>
@@ -63,12 +64,13 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
           <div>
             <h3 style={{ margin: 0, fontSize: "1.3rem" }}>1. Teste de Cooper (12 Minutos) — VO₂máx</h3>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)" }}>
-              Fórmula: VO₂máx = (distância em metros − 504,9) ÷ 44,73 mL/kg/min
+              Informe a distância e marque o sexo. O sistema calcula o VO₂máx e a classificação automaticamente.
             </p>
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.5rem", marginBottom: "1.5rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.25rem", marginBottom: "1.25rem" }}>
+          {/* DISTÂNCIA PERCORRIDA */}
           <div>
             <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)", fontWeight: 500 }}>
               Distância Percorrida (Metros)
@@ -88,9 +90,62 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
             />
           </div>
 
-          <div style={{ backgroundColor: "rgba(0,0,0,0.25)", padding: "1.2rem", borderRadius: "0.75rem", border: "1px solid rgba(0, 208, 132, 0.2)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>VO₂máx Estimado:</div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
+          {/* SELETOR HOMEM / MULHER */}
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-muted)", fontWeight: 500 }}>
+              Sexo / Gênero
+            </label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", height: "46px" }}>
+              <button
+                type="button"
+                onClick={() => setActiveTableGender("Masculino")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.4rem",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.95rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  border: activeTableGender === "Masculino" ? "2px solid var(--vivid-green-cyan)" : "1px solid var(--border-color)",
+                  backgroundColor: activeTableGender === "Masculino" ? "rgba(0, 208, 132, 0.2)" : "rgba(255,255,255,0.04)",
+                  color: activeTableGender === "Masculino" ? "var(--vivid-green-cyan)" : "var(--text-muted)",
+                  transition: "all 0.2s"
+                }}
+              >
+                👨 Homem
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTableGender("Feminino")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.4rem",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.95rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  border: activeTableGender === "Feminino" ? "2px solid var(--vivid-green-cyan)" : "1px solid var(--border-color)",
+                  backgroundColor: activeTableGender === "Feminino" ? "rgba(0, 208, 132, 0.2)" : "rgba(255,255,255,0.04)",
+                  color: activeTableGender === "Feminino" ? "var(--vivid-green-cyan)" : "var(--text-muted)",
+                  transition: "all 0.2s"
+                }}
+              >
+                👩 Mulher
+              </button>
+            </div>
+          </div>
+
+          {/* VO2MÁX ESTIMADO & CLASSIFICAÇÃO */}
+          <div style={{ backgroundColor: "rgba(0,0,0,0.25)", padding: "1rem 1.25rem", borderRadius: "0.75rem", border: "1px solid rgba(0, 208, 132, 0.25)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
+              <span>VO₂máx Estimado:</span>
+              <span style={{ fontSize: "0.75rem" }}>Idade: {studentAge} anos</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginTop: "0.2rem" }}>
               <span style={{ fontSize: "2rem", fontWeight: 800, color: "var(--vivid-green-cyan)" }}>
                 {vo2Max > 0 ? vo2Max.toFixed(1) : "—"}
               </span>
@@ -113,31 +168,42 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
           </div>
         </div>
 
+        {/* BOTÃO TOGGLE TABELA NORMATIVA COMPLETA */}
+        <div style={{ marginTop: "1rem" }}>
+          <button
+            type="button"
+            onClick={() => setShowCooperTable(!showCooperTable)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              background: "none",
+              border: "1px solid var(--border-color)",
+              borderRadius: "0.5rem",
+              color: "var(--text-muted)",
+              fontSize: "0.85rem",
+              cursor: "pointer",
+              padding: "0.4rem 0.8rem",
+              fontWeight: 600,
+              backgroundColor: "rgba(255,255,255,0.03)"
+            }}
+          >
+            <span>{showCooperTable ? "▴ Ocultar Tabela de Referência Cooper" : "▾ Ver Tabela de Referência Cooper (Normativa)"}</span>
+            <span style={{ fontSize: "0.75rem", backgroundColor: "rgba(255,255,255,0.06)", padding: "1px 6px", borderRadius: "4px" }}>
+              {activeTableGender === "Masculino" ? "Homens" : "Mulheres"}
+            </span>
+          </button>
+        </div>
+
         {/* TABELA DE CLASSIFICAÇÃO COM DESTAQUE DA CÉLULA */}
-        <div style={{ marginTop: "1.5rem" }}>
+        {showCooperTable && (
+        <div style={{ marginTop: "1rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
             <span style={{ fontSize: "0.95rem", fontWeight: 600 }}>
               Tabela de Referência — {activeTableGender === "Masculino" ? "Homens" : "Mulheres"} (VO₂máx mL/kg/min):
             </span>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button 
-                type="button" 
-                onClick={() => setActiveTableGender("Masculino")}
-                className={`btn ${activeTableGender === "Masculino" ? "btn-primary" : "btn-secondary"}`}
-                style={{ padding: "0.3rem 0.8rem", fontSize: "0.8rem" }}
-              >
-                Homens
-              </button>
-              <button 
-                type="button" 
-                onClick={() => setActiveTableGender("Feminino")}
-                className={`btn ${activeTableGender === "Feminino" ? "btn-primary" : "btn-secondary"}`}
-                style={{ padding: "0.3rem 0.8rem", fontSize: "0.8rem" }}
-              >
-                Mulheres
-              </button>
-            </div>
           </div>
+
 
           <div style={{ overflowX: "auto", borderRadius: "0.5rem", border: "1px solid var(--border-color)" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", fontSize: "0.85rem" }}>
@@ -196,7 +262,9 @@ export default function AssessmentForm({ studentId, studentAge, studentGender }:
             </table>
           </div>
         </div>
+        )}
       </div>
+
 
       {/* SEÇÃO 2: ESTIMATIVA DO 1RM */}
       <div style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "2rem", marginBottom: "2rem" }}>

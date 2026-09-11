@@ -160,16 +160,17 @@ export async function savePhysicalAssessment(formData: FormData) {
   });
 
   const age = student?.anamnesis?.age ?? 25;
-  const gender = student?.anamnesis?.gender ?? "Masculino";
+  const cooperGender = (formData.get("cooperGender") as string) || student?.anamnesis?.gender || "Masculino";
 
   let cooperVo2Max: number | null = null;
   let cooperClassification: string | null = null;
 
   if (cooperDistance && cooperDistance > 0) {
     cooperVo2Max = calculateCooperVo2Max(cooperDistance);
-    const classificationResult = classifyCooper(cooperVo2Max, age, gender);
+    const classificationResult = classifyCooper(cooperVo2Max, age, cooperGender);
     cooperClassification = classificationResult.classification;
   }
+
 
   let oneRmResultEpley: number | null = null;
   let oneRmResultBrzycki: number | null = null;

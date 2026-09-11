@@ -95,25 +95,31 @@ export default async function AssessmentsPage({ params }: { params: Promise<{ id
 
       {/* BANNER DE EVOLUÇÃO DE FORÇA (SE HOUVER HISTÓRICO DE REAVALIAÇÃO) */}
       {strengthEvolution && (
-        <div className="glass" style={{ padding: "1.25rem 1.5rem", borderRadius: "0.75rem", border: "1px solid rgba(0, 208, 132, 0.3)", backgroundColor: "rgba(0, 208, 132, 0.08)", marginBottom: "2rem", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+        <div className="glass" style={{ padding: "1.25rem 1.5rem", borderRadius: "0.75rem", border: strengthEvolution.diff > 0 ? "1px solid rgba(0, 208, 132, 0.3)" : "1px solid var(--border-color)", backgroundColor: strengthEvolution.diff > 0 ? "rgba(0, 208, 132, 0.08)" : "rgba(255, 255, 255, 0.03)", marginBottom: "2rem", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "rgba(0, 208, 132, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <TrendingUp size={22} color="var(--vivid-green-cyan)" />
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: strengthEvolution.diff > 0 ? "rgba(0, 208, 132, 0.2)" : "rgba(255, 255, 255, 0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <TrendingUp size={22} color={strengthEvolution.diff > 0 ? "var(--vivid-green-cyan)" : "white"} />
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "white" }}>
-                Evolução de 1RM: {strengthEvolution.diff >= 0 ? `+${strengthEvolution.diff} kg (+${strengthEvolution.pct}%)` : `${strengthEvolution.diff} kg (${strengthEvolution.pct}%)`}
+                {strengthEvolution.diff > 0
+                  ? `Evolução de 1RM: +${strengthEvolution.diff} kg (+${strengthEvolution.pct}%)`
+                  : strengthEvolution.diff < 0
+                  ? `Ajuste de 1RM: ${strengthEvolution.diff} kg (${strengthEvolution.pct}%)`
+                  : `Carga de 1RM Mantida: ${latestAssessment.oneRmResultEpley?.toFixed(1)} kg (Estável)`
+                }
               </div>
               <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
                 Comparativo entre a última reavaliação ({new Date(latestAssessment.createdAt).toLocaleDateString("pt-BR")}) e a avaliação anterior ({new Date(previousAssessment.createdAt).toLocaleDateString("pt-BR")}).
               </div>
             </div>
           </div>
-          <span style={{ padding: "0.3rem 0.8rem", borderRadius: "1rem", backgroundColor: "rgba(0, 208, 132, 0.2)", color: "var(--vivid-green-cyan)", fontWeight: 800, fontSize: "0.85rem" }}>
+          <span style={{ padding: "0.3rem 0.8rem", borderRadius: "1rem", backgroundColor: strengthEvolution.diff > 0 ? "rgba(0, 208, 132, 0.2)" : "rgba(255, 255, 255, 0.08)", color: strengthEvolution.diff > 0 ? "var(--vivid-green-cyan)" : "var(--text-muted)", fontWeight: 800, fontSize: "0.85rem" }}>
             {student.assessments.length} avaliações no histórico
           </span>
         </div>
       )}
+
 
       {/* FORMULÁRIO INTERATIVO / REAVALIAÇÃO */}
       <div id="calculadora-avaliacao">
